@@ -7,8 +7,6 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://alcdn.msauth.net/browser/2.0.0/js/msal-browser.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@microsoft/microsoft-graph-client/lib/graph-js-sdk.js"></script>
 </head>
 <body>
     <div class="container">
@@ -19,7 +17,8 @@
                 <button onclick="window.location.href='history.html'" class="nav-btn">历史记录</button>
                 <button onclick="window.location.href='analysis.html'" class="nav-btn">数据分析</button>
                 <button id="githubLoginBtn" class="nav-btn">
-                    <i class="fab fa-github"></i> 连接GitHub
+                    <i class="fab fa-github"></i>
+                    <span>连接GitHub</span>
                 </button>
                 <span id="syncStatus" class="sync-status"></span>
             </div>
@@ -193,14 +192,6 @@
         <div class="export-buttons">
             <button id="exportCSV" class="export-btn">导出CSV</button>
             <button id="exportJSON" class="export-btn">导出JSON</button>
-        </div>
-
-        <!-- 添加登录按钮 -->
-        <div class="sync-container">
-            <button id="msLoginBtn" class="sync-btn">
-                <i class="fab fa-microsoft"></i> 连接OneDrive
-            </button>
-            <div id="syncStatus" class="sync-status"></div>
         </div>
 
         <!-- 在页面底部添加设置面板 -->

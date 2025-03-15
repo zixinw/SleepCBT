@@ -91,13 +91,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
 
     // 初始化 GitHub 同步
+    const githubLoginBtn = document.getElementById('githubLoginBtn');
+    if (githubLoginBtn) {
+        githubLoginBtn.addEventListener('click', () => {
+            githubSync.login();
+        });
+    }
+
     await githubSync.init();
     
-    // 添加GitHub登录按钮事件
-    document.getElementById('githubLoginBtn').addEventListener('click', () => {
-        githubSync.login();
-    });
-
     // 在页面加载时调用初始化
     initializeForm();
 });
@@ -365,37 +367,44 @@ function downloadFile(content, fileName, contentType) {
 }
 
 // 初始化日历
-function initializeCalendar() {
+function initializeCalendar(startDate = new Date()) {
     const weekDays = document.querySelector('.week-days');
     weekDays.innerHTML = ''; // 清空现有内容
     
     // 获取本周的周日
-    const today = new Date();
-    const currentDay = today.getDay(); // 0-6, 0是周日
-    const sunday = new Date(today);
-    sunday.setDate(today.getDate() - currentDay);
-
+    const sunday = new Date(startDate);
+    const currentDay = sunday.getDay(); // 0-6, 0是周日
+    sunday.setDate(sunday.getDate() - currentDay); // 调整到本周日
+    
     // 创建周切换按钮
     const prevWeek = document.createElement('button');
     prevWeek.className = 'week-nav prev';
     prevWeek.innerHTML = '&lt;';
-    prevWeek.onclick = () => changeWeek(-1);
+    prevWeek.onclick = () => {
+        const newDate = new Date(sunday);
+        newDate.setDate(newDate.getDate() - 7);
+        initializeCalendar(newDate);
+    };
 
     const nextWeek = document.createElement('button');
     nextWeek.className = 'week-nav next';
     nextWeek.innerHTML = '&gt;';
-    nextWeek.onclick = () => changeWeek(1);
+    nextWeek.onclick = () => {
+        const newDate = new Date(sunday);
+        newDate.setDate(newDate.getDate() + 7);
+        initializeCalendar(newDate);
+    };
 
     weekDays.appendChild(prevWeek);
 
-    // 显示一周的日期
+    // 显示一周的日期（从周日开始）
     for (let i = 0; i < 7; i++) {
         const date = new Date(sunday);
         date.setDate(sunday.getDate() + i);
         const dateString = date.toISOString().split('T')[0];
         
         const dayElement = document.createElement('div');
-        dayElement.className = `day-item ${date.toDateString() === today.toDateString() ? 'current' : ''}`;
+        dayElement.className = `day-item ${date.toDateString() === new Date().toDateString() ? 'current' : ''}`;
         dayElement.dataset.date = dateString;
         dayElement.innerHTML = `
             <span class="weekday">周${['日','一','二','三','四','五','六'][i]}</span>
@@ -414,13 +423,6 @@ function initializeCalendar() {
     }
 
     weekDays.appendChild(nextWeek);
-}
-
-// 添加周切换功能
-function changeWeek(offset) {
-    const currentDate = new Date(document.querySelector('.day-item').dataset.date);
-    currentDate.setDate(currentDate.getDate() + offset * 7);
-    initializeCalendar(currentDate);
 }
 
 // 修改初始化函数

@@ -50,16 +50,14 @@ class GitHubSync {
     // 更新登录按钮状态
     updateLoginButton() {
         const loginBtn = document.getElementById('githubLoginBtn');
-        const syncStatus = document.getElementById('syncStatus');
+        if (!loginBtn) return; // 如果按钮不存在则返回
         
         if (this.isLoggedIn) {
-            loginBtn.textContent = '已连接到GitHub';
+            loginBtn.innerHTML = '<i class="fab fa-github"></i><span>已连接到GitHub</span>';
             loginBtn.disabled = true;
-            syncStatus.textContent = '数据将自动同步';
         } else {
-            loginBtn.textContent = '连接GitHub';
+            loginBtn.innerHTML = '<i class="fab fa-github"></i><span>连接GitHub</span>';
             loginBtn.disabled = false;
-            syncStatus.textContent = '';
         }
     }
 
