@@ -112,36 +112,18 @@
             <div class="ratings-container">
                 <div class="form-group half-width">
                     <label>睡眠质量</label>
-                    <div class="slider-container">
-                        <input type="range" id="sleepQuality" min="1" max="5" step="1" value="3">
-                        <div class="slider-labels">
-                            <span>很差</span>
-                            <span>较差</span>
-                            <span>一般</span>
-                            <span>较好</span>
-                            <span>很好</span>
-                        </div>
-                        <div class="quality-display">
-                            <div class="slider-value" id="sleepQualityValue">3分</div>
-                            <div class="quality-icon" id="sleepQualityIcon"></div>
-                        </div>
+                    <input type="range" id="sleepQuality" min="1" max="5" value="3">
+                    <div class="quality-display">
+                        <div id="sleepQualityIcon" class="quality-icon"></div>
+                        <span id="sleepQualityValue">3分</span>
                     </div>
                 </div>
                 <div class="form-group half-width">
                     <label>睡醒后的精神状态</label>
-                    <div class="slider-container">
-                        <input type="range" id="fatigueLevel" min="1" max="5" step="1" value="3">
-                        <div class="slider-labels">
-                            <span>非常疲惫</span>
-                            <span>较为疲惫</span>
-                            <span>一般</span>
-                            <span>较为清醒</span>
-                            <span>精神饱满</span>
-                        </div>
-                        <div class="quality-display">
-                            <div class="slider-value" id="fatigueLevelValue">3分</div>
-                            <div class="quality-icon" id="fatigueLevelIcon"></div>
-                        </div>
+                    <input type="range" id="fatigueLevel" min="1" max="5" value="3">
+                    <div class="quality-display">
+                        <div id="fatigueLevelIcon" class="quality-icon"></div>
+                        <span id="fatigueLevelValue">3分</span>
                     </div>
                 </div>
             </div>

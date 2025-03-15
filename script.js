@@ -136,28 +136,32 @@ function initializeSliders() {
         'sleepQuality': {
             valueId: 'sleepQualityValue',
             iconId: 'sleepQualityIcon',
-            type: 'sleep'
+            type: 'sleep',
+            labels: ['很差', '较差', '一般', '较好', '很好']
         },
         'fatigueLevel': {
             valueId: 'fatigueLevelValue',
             iconId: 'fatigueLevelIcon',
-            type: 'fatigue'
+            type: 'fatigue',
+            labels: ['非常疲惫', '较为疲惫', '一般', '较为清醒', '精神饱满']
         }
     };
     
     Object.entries(sliders).forEach(([sliderId, config]) => {
         const slider = document.getElementById(sliderId);
+        if (!slider) return;
+
         const valueDisplay = document.getElementById(config.valueId);
         const iconDisplay = document.getElementById(config.iconId);
         
         // 初始化显示
-        valueDisplay.textContent = `${slider.value}分`;
-        updateQualityIcon(slider.value, config.type, iconDisplay);
+        if (valueDisplay) valueDisplay.textContent = `${slider.value}分`;
+        if (iconDisplay) updateQualityIcon(slider.value, config.type, iconDisplay);
         
         // 监听变化
         slider.addEventListener('input', function() {
-            valueDisplay.textContent = `${this.value}分`;
-            updateQualityIcon(this.value, config.type, iconDisplay);
+            if (valueDisplay) valueDisplay.textContent = `${this.value}分`;
+            if (iconDisplay) updateQualityIcon(this.value, config.type, iconDisplay);
         });
     });
 }
@@ -369,14 +373,15 @@ function downloadFile(content, fileName, contentType) {
 // 初始化日历
 function initializeCalendar(startDate = new Date()) {
     const weekDays = document.querySelector('.week-days');
-    weekDays.innerHTML = ''; // 清空现有内容
+    if (!weekDays) return; // 确保元素存在
+    
+    weekDays.innerHTML = '';
     
     // 获取本周的周日
     const sunday = new Date(startDate);
-    const currentDay = sunday.getDay(); // 0-6, 0是周日
-    sunday.setDate(sunday.getDate() - currentDay); // 调整到本周日
+    sunday.setDate(sunday.getDate() - sunday.getDay());
     
-    // 创建周切换按钮
+    // 添加周导航按钮
     const prevWeek = document.createElement('button');
     prevWeek.className = 'week-nav prev';
     prevWeek.innerHTML = '&lt;';
@@ -397,7 +402,7 @@ function initializeCalendar(startDate = new Date()) {
 
     weekDays.appendChild(prevWeek);
 
-    // 显示一周的日期（从周日开始）
+    // 显示日期
     for (let i = 0; i < 7; i++) {
         const date = new Date(sunday);
         date.setDate(sunday.getDate() + i);
@@ -519,6 +524,8 @@ function getSleepEfficiencyColor(efficiency) {
 // 添加醒来记录的函数
 function addWakeRecord() {
     const wakeRecords = document.getElementById('wakeRecords');
+    if (!wakeRecords) return;
+
     const newRecord = document.createElement('div');
     newRecord.className = 'form-group wake-record';
     newRecord.innerHTML = `
