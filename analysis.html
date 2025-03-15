@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>睡眠分析</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>睡眠分析</h1>
+            <div class="nav-buttons">
+                <button onclick="window.location.href='index.html'" class="nav-btn">返回记录</button>
+                <button onclick="window.location.href='history.html'" class="nav-btn">历史记录</button>
+            </div>
+        </header>
+
+        <div class="analysis-section">
+            <!-- 总体统计 -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <h3>平均睡眠时长</h3>
+                    <div class="stat-value" id="avgSleepDuration">--h --m</div>
+                </div>
+                <div class="stat-card">
+                    <h3>平均睡眠效率</h3>
+                    <div class="stat-value" id="avgSleepEfficiency">--%</div>
+                </div>
+                <div class="stat-card">
+                    <h3>平均入睡时间</h3>
+                    <div class="stat-value" id="avgFallAsleepTime">--分钟</div>
+                </div>
+            </div>
+
+            <!-- 图表区域 -->
+            <div class="charts-container">
+                <div class="chart-card">
+                    <h3>睡眠趋势</h3>
+                    <canvas id="sleepTrendChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>睡眠效率分析</h3>
+                    <canvas id="sleepEfficiencyChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>睡眠质量与精神状态关系</h3>
+                    <canvas id="qualityFatigueChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 睡眠建议 -->
+            <div class="advice-container">
+                <h3>睡眠建议</h3>
+                <div id="sleepAdvice" class="advice-content">
+                    <!-- 建议内容将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAnalysisData();
+        });
+
+        function loadAnalysisData() {
+            const sleepHistory = JSON.parse(localStorage.getItem('sleepHistory') || '[]');
+            if (sleepHistory.length === 0) {
+                document.querySelector('.analysis-section').innerHTML = '<p class="no-data">暂无睡眠记录数据</p>';
+                return;
+            }
+
+            updateStatistics(sleepHistory);
+            updateCharts(sleepHistory);
+            generateAdvice(sleepHistory);
+        }
+    </script>
+</body>
+</html>

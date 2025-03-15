@@ -1,0 +1,459 @@
+:root {
+    --primary-color: #4080FF;
+    --secondary-color: #FFB74D;
+    --success-color: #66BB6A;
+    --background-color: #f5f6fa;
+    --surface-color: #FFFFFF;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --border-color: #E0E0E0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* 顶部导航 */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.nav-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    background: var(--surface-color);
+    color: var(--primary-color);
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 日历选择器 */
+.calendar-container {
+    background: var(--surface-color);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.week-days {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.day-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.day-item.current {
+    background: var(--primary-color);
+    color: white;
+}
+
+.weekday {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.date {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* 睡眠效率展示 */
+.sleep-efficiency {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: var(--surface-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+#efficiencyNumber {
+    font-size: 40px;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* 数据卡片 */
+.data-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.data-card {
+    background: var(--surface-color);
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.data-card .icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.data-card .label {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.data-card .value {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin-top: 4px;
+}
+
+/* 表单样式 */
+.form-group {
+    background: var(--surface-color);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+input[type="time"],
+input[type="number"],
+input[type="date"],
+input[type="text"],
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* 滑块样式 */
+.slider-container {
+    padding: 10px 0;
+}
+
+input[type="range"] {
+    width: 100%;
+    height: 6px;
+    background: var(--border-color);
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.slider-value {
+    text-align: center;
+    margin-top: 8px;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* 按钮样式 */
+.submit-btn {
+    width: 100%;
+    padding: 15px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.secondary-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--surface-color);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    margin: 10px 0;
+}
+
+/* 图表容器 */
+.charts-container {
+    background: var(--surface-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.chart-card {
+    margin-bottom: 30px;
+}
+
+.chart-card h3 {
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+/* 历史记录样式 */
+.history-section {
+    background: var(--surface-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.history-item {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+}
+
+/* 导出按钮 */
+.export-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.export-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    background: var(--secondary-color);
+    color: white;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+
+    .data-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .day-item {
+        padding: 8px;
+    }
+
+    .date {
+        font-size: 16px;
+    }
+}
+
+/* 添加评分并排显示样式 */
+.ratings-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.form-group.half-width {
+    margin: 0;
+}
+
+/* 梦境记录样式 */
+.dream-toggle {
+    margin-bottom: 10px;
+}
+
+.dream-toggle label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.dream-toggle input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+}
+
+#dreamContentContainer {
+    margin-top: 10px;
+}
+
+/* 分析页面样式 */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: var(--surface-color);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-top: 10px;
+}
+
+.advice-container {
+    background: var(--surface-color);
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 30px;
+}
+
+.advice-content {
+    margin-top: 15px;
+    line-height: 1.6;
+}
+
+/* 历史记录页面样式 */
+.filter-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.filter-select {
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--surface-color);
+}
+
+.history-list {
+    background: var(--surface-color);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.history-item {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.history-item:hover {
+    background-color: var(--background-color);
+}
+
+/* 模态框样式 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: var(--surface-color);
+    padding: 20px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.close-btn {
+    float: right;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-container {
+        flex-direction: column;
+    }
+}

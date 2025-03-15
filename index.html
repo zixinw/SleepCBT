@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>睡眠记录</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航 -->
+        <header>
+            <h1>睡眠记录</h1>
+            <div class="nav-buttons">
+                <button id="historyBtn" class="nav-btn">历史记录</button>
+                <button id="analysisBtn" class="nav-btn">数据分析</button>
+            </div>
+        </header>
+
+        <!-- 日历选择器 -->
+        <div class="calendar-container">
+            <div class="date-picker">
+                <input type="date" id="dateSelect">
+            </div>
+            <div class="week-days">
+                <div class="day-item current">
+                    <span class="weekday">周五</span>
+                    <span class="date">11</span>
+                </div>
+                <!-- 其他日期会通过JavaScript动态生成 -->
+            </div>
+        </div>
+
+        <!-- 睡眠效率展示 -->
+        <div class="sleep-efficiency">
+            <div class="circle">
+                <span id="efficiencyNumber">--</span>%
+                <div class="label">睡眠效率</div>
+            </div>
+        </div>
+
+        <!-- 核心数据卡片 -->
+        <div class="data-cards">
+            <div class="data-card">
+                <i class="icon">⏰</i>
+                <div class="label">实际作息</div>
+                <div class="value" id="actualSleepTime">--:-- - --:--</div>
+            </div>
+            <div class="data-card">
+                <i class="icon">⌛</i>
+                <div class="label">睡着时长</div>
+                <div class="value" id="sleepDuration">--h --m</div>
+            </div>
+            <div class="data-card">
+                <i class="icon">🌙</i>
+                <div class="label">入睡速度</div>
+                <div class="value" id="fallAsleepSpeed">--分钟</div>
+            </div>
+            <div class="data-card">
+                <i class="icon">💤</i>
+                <div class="label">有效睡眠</div>
+                <div class="value" id="effectiveSleep">--h --m</div>
+            </div>
+        </div>
+
+        <!-- 记录表单 -->
+        <form id="sleepForm">
+            <div class="form-group">
+                <label>上床时间</label>
+                <input type="time" id="bedTime" required>
+            </div>
+
+            <div class="form-group">
+                <label>关灯时间</label>
+                <input type="time" id="lightsOffTime" required>
+            </div>
+
+            <div class="form-group">
+                <label>入睡时长（分钟）</label>
+                <input type="number" id="timeToSleep" required min="0">
+            </div>
+
+            <div class="form-group">
+                <label>醒来次数</label>
+                <input type="number" id="wakeCount" min="0" value="0">
+            </div>
+
+            <div id="wakeRecords">
+                <!-- 动态添加醒来记录 -->
+            </div>
+
+            <button type="button" id="addWakeRecord" class="secondary-btn">添加醒来记录</button>
+
+            <div class="form-group">
+                <label>最终醒来时间</label>
+                <input type="time" id="finalWakeTime" required>
+            </div>
+
+            <div class="form-group">
+                <label>起床时间</label>
+                <input type="time" id="getUpTime" required>
+            </div>
+
+            <!-- 评分滑块 -->
+            <div class="ratings-container">
+                <div class="form-group half-width">
+                    <label>睡眠质量</label>
+                    <div class="slider-container">
+                        <input type="range" id="sleepQuality" min="1" max="5" step="1" value="3">
+                        <div class="slider-labels">
+                            <span>很差</span>
+                            <span>较差</span>
+                            <span>一般</span>
+                            <span>较好</span>
+                            <span>很好</span>
+                        </div>
+                        <div class="slider-value" id="sleepQualityValue">3分</div>
+                    </div>
+                </div>
+                <div class="form-group half-width">
+                    <label>睡醒后的精神状态</label>
+                    <div class="slider-container">
+                        <input type="range" id="fatigueLevel" min="1" max="5" step="1" value="3">
+                        <div class="slider-labels">
+                            <span>非常疲惫</span>
+                            <span>较为疲惫</span>
+                            <span>一般</span>
+                            <span>较为清醒</span>
+                            <span>精神饱满</span>
+                        </div>
+                        <div class="slider-value" id="fatigueLevelValue">3分</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>入睡辅助</label>
+                <input type="text" id="sleepAid" placeholder="例如：冥想、阅读、音乐...">
+            </div>
+
+            <div class="form-group">
+                <div class="dream-toggle">
+                    <label>
+                        <input type="checkbox" id="hadDream">
+                        是否做梦
+                    </label>
+                </div>
+                <div id="dreamContentContainer" style="display: none;">
+                    <textarea id="dreamContent" placeholder="记录梦境内容..."></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">保存记录</button>
+        </form>
+
+        <!-- 数据分析部分 -->
+        <div class="analysis-section" style="display: none;">
+            <div class="charts-container">
+                <div class="chart-card">
+                    <h3>睡眠趋势</h3>
+                    <canvas id="sleepTrendChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>睡眠效率分析</h3>
+                    <canvas id="sleepEfficiencyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 历史记录部分 -->
+        <div class="history-section" style="display: none;">
+            <div class="history-filters">
+                <select id="historyMonth"></select>
+            </div>
+            <div class="history-list" id="historyList"></div>
+        </div>
+
+        <!-- 导出按钮 -->
+        <div class="export-buttons">
+            <button id="exportCSV" class="export-btn">导出CSV</button>
+            <button id="exportJSON" class="export-btn">导出JSON</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+    document.getElementById('hadDream').addEventListener('change', function() {
+        const container = document.getElementById('dreamContentContainer');
+        container.style.display = this.checked ? 'block' : 'none';
+        if (!this.checked) {
+            document.getElementById('dreamContent').value = '';
+        }
+    });
+
+    function analyzeSleepPattern(data) {
+        const analysis = {
+            suggestions: [],
+            patterns: []
+        };
+
+        // 分析睡眠时长
+        const sleepDuration = calculateSleepDuration(data);
+        if (sleepDuration < 420) { // 7小时
+            analysis.suggestions.push("睡眠时间不足，建议保证7-8小时的睡眠时间");
+        }
+
+        // 分析入睡时间
+        if (data.timeToSleep > 30) {
+            analysis.suggestions.push("入睡时间较长，建议：\n- 避免睡前使用电子设备\n- 尝试放松技巧如深呼吸或冥想");
+        }
+
+        // 分析睡眠效率
+        const metrics = calculateSleepMetrics(data);
+        if (parseFloat(metrics.efficiency) < 85) {
+            analysis.suggestions.push("睡眠效率偏低，建议：\n- 固定作息时间\n- 减少床上非睡眠活动");
+        }
+
+        return analysis;
+    }
+
+    function showHistory() {
+        window.location.href = 'history.html';
+    }
+
+    function showAnalysis() {
+        window.location.href = 'analysis.html';
+    }
+    </script>
+</body>
+</html>

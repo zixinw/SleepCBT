@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>睡眠历史记录</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>历史记录</h1>
+            <div class="nav-buttons">
+                <button onclick="window.location.href='index.html'" class="nav-btn">返回记录</button>
+                <button onclick="window.location.href='analysis.html'" class="nav-btn">数据分析</button>
+            </div>
+        </header>
+
+        <div class="history-section">
+            <!-- 筛选器 -->
+            <div class="filter-container">
+                <select id="monthFilter" class="filter-select">
+                    <!-- 月份选项将通过JavaScript动态生成 -->
+                </select>
+                <select id="yearFilter" class="filter-select">
+                    <!-- 年份选项将通过JavaScript动态生成 -->
+                </select>
+            </div>
+
+            <!-- 历史记录列表 -->
+            <div class="history-list" id="historyList">
+                <!-- 记录将通过JavaScript动态生成 -->
+            </div>
+
+            <!-- 导出按钮 -->
+            <div class="export-buttons">
+                <button id="exportCSV" class="export-btn">导出CSV</button>
+                <button id="exportJSON" class="export-btn">导出JSON</button>
+            </div>
+        </div>
+
+        <!-- 记录详情模态框 -->
+        <div id="recordModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2>睡眠记录详情</h2>
+                <div id="recordDetails">
+                    <!-- 详情内容将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeHistoryPage();
+        });
+
+        function initializeHistoryPage() {
+            initializeFilters();
+            loadHistoryRecords();
+            initializeExportButtons();
+        }
+
+        function initializeFilters() {
+            const sleepHistory = JSON.parse(localStorage.getItem('sleepHistory') || '[]');
+            if (sleepHistory.length === 0) {
+                document.querySelector('.history-list').innerHTML = '<p class="no-data">暂无睡眠记录数据</p>';
+                return;
+            }
+
+            // 生成年月筛选器选项
+            const dates = sleepHistory.map(record => new Date(record.date));
+            const years = [...new Set(dates.map(date => date.getFullYear()))];
+            const months = [...new Set(dates.map(date => date.getMonth()))];
+
+            // 填充年份选择器
+            const yearFilter = document.getElementById('yearFilter');
+            years.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = `${year}年`;
+                yearFilter.appendChild(option);
+            });
+
+            // 填充月份选择器
+            const monthFilter = document.getElementById('monthFilter');
+            months.forEach(month => {
+                const option = document.createElement('option');
+                option.value = month;
+                option.textContent = `${month + 1}月`;
+                monthFilter.appendChild(option);
+            });
+        }
+    </script>
+</body>
+</html>
