@@ -22,32 +22,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // 添加醒来记录
-    let wakeRecordCount = 0;
-    document.getElementById('addWakeRecord').addEventListener('click', function() {
-        const wakeRecords = document.getElementById('wakeRecords');
-        const newRecord = document.createElement('div');
-        newRecord.className = 'form-group wake-record';
-        newRecord.innerHTML = `
-            <label>醒来记录 #${++wakeRecordCount}</label>
-            <div style="display: flex; gap: 10px;">
-                <div style="flex: 1;">
-                    <label>时间</label>
-                    <input type="time" class="wake-time" required>
-                </div>
-                <div style="flex: 1;">
-                    <label>持续时间（分钟）</label>
-                    <input type="number" class="wake-duration" required>
-                </div>
-            </div>
-        `;
-        wakeRecords.appendChild(newRecord);
-    });
+    // 添加醒来记录按钮事件监听
+    document.getElementById('addWakeRecord').addEventListener('click', addWakeRecord);
 
     // 表单提交处理
     document.getElementById('sleepForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
+        // 收集醒来记录数据
+        const wakeRecords = Array.from(document.querySelectorAll('.wake-record')).map(record => ({
+            time: record.querySelector('.wake-time').value,
+            duration: record.querySelector('.wake-duration').value,
+            activity: record.querySelector('.wake-activity').value
+        }));
+
         // 收集表单数据
         const data = {
             date: document.getElementById('dateSelect').value,
@@ -55,10 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
             lightsOffTime: document.getElementById('lightsOffTime').value,
             timeToSleep: document.getElementById('timeToSleep').value,
             wakeCount: document.getElementById('wakeCount').value,
-            wakeRecords: Array.from(document.querySelectorAll('.wake-record')).map(record => ({
-                time: record.querySelector('.wake-time').value,
-                duration: record.querySelector('.wake-duration').value
-            })),
+            wakeRecords: wakeRecords,
             finalWakeTime: document.getElementById('finalWakeTime').value,
             getUpTime: document.getElementById('getUpTime').value,
             sleepQuality: document.getElementById('sleepQuality').value,
@@ -95,25 +80,71 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('dreamContent').value = '';
         }
     });
+
+    // 初始化OneDrive同步
+    const oneDriveSync = new OneDriveSync();
+
+    // 添加登录按钮事件监听
+    document.getElementById('msLoginBtn').addEventListener('click', async () => {
+        await oneDriveSync.login();
+        await oneDriveSync.autoSync();
+    });
 });
 
-// 初始化滑块
+// 全局变量（确保在 DOMContentLoaded 外部定义）
+let wakeRecordCount = 0;
+
+// 定义图标映射
+const qualityIcons = {
+    1: '<i class="fas fa-face-tired" style="color: #ff4444;"></i>',        // 很差
+    2: '<i class="fas fa-face-frown" style="color: #ffbb33;"></i>',       // 较差
+    3: '<i class="fas fa-face-meh" style="color: #00C851;"></i>',         // 一般
+    4: '<i class="fas fa-face-smile" style="color: #33b5e5;"></i>',       // 较好
+    5: '<i class="fas fa-face-laugh-beam" style="color: #4080FF;"></i>'   // 很好
+};
+
+const fatigueIcons = {
+    1: '<i class="fas fa-battery-empty" style="color: #ff4444;"></i>',    // 非常疲惫
+    2: '<i class="fas fa-battery-quarter" style="color: #ffbb33;"></i>',  // 较为疲惫
+    3: '<i class="fas fa-battery-half" style="color: #00C851;"></i>',     // 一般
+    4: '<i class="fas fa-battery-three-quarters" style="color: #33b5e5;"></i>', // 较为清醒
+    5: '<i class="fas fa-battery-full" style="color: #4080FF;"></i>'      // 精神饱满
+};
+
+// 更新图标显示函数
+function updateQualityIcon(value, type, element) {
+    const icons = type === 'sleep' ? qualityIcons : fatigueIcons;
+    element.innerHTML = icons[value];
+}
+
+// 修改滑块初始化函数
 function initializeSliders() {
     const sliders = {
-        'sleepQuality': 'sleepQualityValue',
-        'fatigueLevel': 'fatigueLevelValue'
+        'sleepQuality': {
+            valueId: 'sleepQualityValue',
+            iconId: 'sleepQualityIcon',
+            type: 'sleep'
+        },
+        'fatigueLevel': {
+            valueId: 'fatigueLevelValue',
+            iconId: 'fatigueLevelIcon',
+            type: 'fatigue'
+        }
     };
     
-    Object.entries(sliders).forEach(([sliderId, valueId]) => {
+    Object.entries(sliders).forEach(([sliderId, config]) => {
         const slider = document.getElementById(sliderId);
-        const valueDisplay = document.getElementById(valueId);
+        const valueDisplay = document.getElementById(config.valueId);
+        const iconDisplay = document.getElementById(config.iconId);
         
         // 初始化显示
         valueDisplay.textContent = `${slider.value}分`;
+        updateQualityIcon(slider.value, config.type, iconDisplay);
         
         // 监听变化
         slider.addEventListener('input', function() {
             valueDisplay.textContent = `${this.value}分`;
+            updateQualityIcon(this.value, config.type, iconDisplay);
         });
     });
 }
@@ -122,12 +153,19 @@ function initializeSliders() {
 function updateSleepMetrics(data) {
     const metrics = calculateSleepMetrics(data);
     
-    // 更新显示
+    // 更新显示并应用颜色
     document.getElementById('actualSleepTime').textContent = metrics.actualSleepTime;
-    document.getElementById('sleepDuration').textContent = metrics.sleepDuration;
+    
+    const sleepDurationElement = document.getElementById('sleepDuration');
+    sleepDurationElement.textContent = metrics.sleepDuration;
+    sleepDurationElement.style.color = metrics.sleepDurationColor;
+    
     document.getElementById('fallAsleepSpeed').textContent = metrics.fallAsleepSpeed;
     document.getElementById('effectiveSleep').textContent = metrics.effectiveSleep;
-    document.getElementById('efficiencyNumber').textContent = metrics.efficiency;
+    
+    const efficiencyElement = document.getElementById('efficiencyNumber');
+    efficiencyElement.textContent = metrics.efficiency;
+    efficiencyElement.style.color = getSleepEfficiencyColor(metrics.efficiency);
 }
 
 function calculateSleepMetrics(data) {
@@ -168,9 +206,14 @@ function calculateSleepMetrics(data) {
     const effectiveHours = Math.floor(effectiveSleepMinutes / 60);
     const effectiveMinutes = Math.floor(effectiveSleepMinutes % 60);
 
+    // 计算总睡眠时长（小时）
+    const totalSleepHours = sleepDurationMinutes / 60;
+    
     return {
         actualSleepTime: `${formatTime(sleepStartTime)} - ${formatTime(finalWakeTime)}`,
         sleepDuration: `${hours}h ${minutes}m`,
+        sleepDurationHours: totalSleepHours,
+        sleepDurationColor: getSleepDurationColor(totalSleepHours),
         fallAsleepSpeed: `${timeToSleep}分钟`,
         effectiveSleep: `${effectiveHours}h ${effectiveMinutes}m`,
         efficiency: efficiency
@@ -183,10 +226,15 @@ function formatTime(date) {
 }
 
 // 保存数据
-function saveSleepData(data) {
+async function saveSleepData(data) {
     const sleepHistory = JSON.parse(localStorage.getItem('sleepHistory') || '[]');
     sleepHistory.push(data);
     localStorage.setItem('sleepHistory', JSON.stringify(sleepHistory));
+    
+    // 如果已连接OneDrive，自动同步
+    if (oneDriveSync.graphClient) {
+        await oneDriveSync.uploadData();
+    }
 }
 
 // 显示历史记录
@@ -244,8 +292,23 @@ function updateCharts() {
                     const metrics = calculateSleepMetrics(record);
                     return parseFloat(metrics.efficiency);
                 }),
-                backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                backgroundColor: function(context) {
+                    const value = context.raw;
+                    return getSleepEfficiencyColor(value);
+                }
             }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: '睡眠效率 (%)'
+                    }
+                }
+            }
         }
     });
 }
@@ -349,4 +412,124 @@ function loadDayData(date) {
         document.getElementById('sleepForm').reset();
         document.getElementById('dreamContentContainer').style.display = 'none';
     }
+}
+
+// 添加睡眠时长颜色判断函数
+function getSleepDurationColor(hours) {
+    if (hours < 6) return 'var(--error-color)';     // 红色
+    if (hours < 7) return 'var(--warning-color)';   // 黄色
+    if (hours <= 8) return 'var(--success-color)';  // 绿色
+    return 'var(--primary-color)';                  // 蓝色
+}
+
+// 添加睡眠效率颜色判断函数
+function getSleepEfficiencyColor(efficiency) {
+    const efficiencyNum = parseFloat(efficiency);
+    if (efficiencyNum < 50) return 'var(--error-color)';      // 红色
+    if (efficiencyNum < 60) return 'var(--warning-color)';    // 黄色
+    if (efficiencyNum < 80) return 'var(--success-color)';    // 绿色
+    return 'var(--primary-color)';                            // 蓝色
+}
+
+// 添加醒来记录的函数
+function addWakeRecord() {
+    const wakeRecords = document.getElementById('wakeRecords');
+    const newRecord = document.createElement('div');
+    newRecord.className = 'form-group wake-record';
+    newRecord.innerHTML = `
+        <label>醒来记录 #${++wakeRecordCount}</label>
+        <div class="wake-record-grid">
+            <div class="wake-time-input">
+                <label>时间</label>
+                <input type="time" class="wake-time" required>
+            </div>
+            <div class="wake-duration-input">
+                <label>持续时间（分钟）</label>
+                <input type="number" class="wake-duration" min="1" required>
+            </div>
+            <div class="wake-activity-input">
+                <label>醒来活动</label>
+                <input type="text" class="wake-activity" placeholder="例如：上厕所、喝水...">
+            </div>
+        </div>
+        <button type="button" class="remove-wake-record" onclick="removeWakeRecord(this)">删除</button>
+    `;
+    wakeRecords.appendChild(newRecord);
+}
+
+// 添加删除醒来记录的函数
+function removeWakeRecord(button) {
+    button.parentElement.remove();
+    // 重新编号
+    document.querySelectorAll('.wake-record').forEach((record, index) => {
+        record.querySelector('label').textContent = `醒来记录 #${index + 1}`;
+    });
+    wakeRecordCount--;
+}
+
+function updateWeeklyAverages(data) {
+    // 计算平均关灯时间
+    const avgLightsOff = calculateAverageLightsOffTime(data);
+    document.getElementById('avgLightsOffTime').textContent = formatTime(avgLightsOff);
+    
+    // 计算平均睡眠时间
+    const avgSleepDuration = calculateAverageSleepDuration(data);
+    document.getElementById('avgSleepDuration').textContent = 
+        `${Math.floor(avgSleepDuration)}h ${Math.round((avgSleepDuration % 1) * 60)}m`;
+    
+    // 更新进度条
+    updateProgressBars(avgLightsOff, avgSleepDuration);
+}
+
+function calculateAverageLightsOffTime(data) {
+    const times = data.map(record => {
+        const [hours, minutes] = record.lightsOffTime.split(':');
+        return new Date(2000, 0, 1, hours, minutes);
+    });
+    
+    const totalMinutes = times.reduce((sum, time) => {
+        let minutes = time.getHours() * 60 + time.getMinutes();
+        // 处理跨午夜的情况
+        if (minutes < 12 * 60) { // 如果时间在凌晨
+            minutes += 24 * 60;
+        }
+        return sum + minutes;
+    }, 0);
+    
+    const avgMinutes = totalMinutes / times.length;
+    const avgHours = Math.floor(avgMinutes / 60) % 24;
+    const avgMins = Math.round(avgMinutes % 60);
+    
+    return new Date(2000, 0, 1, avgHours, avgMins);
+}
+
+function calculateAverageSleepDuration(data) {
+    const durations = data.map(record => {
+        const metrics = calculateSleepMetrics(record);
+        return metrics.sleepDurationHours;
+    });
+    
+    return durations.reduce((sum, duration) => sum + duration, 0) / durations.length;
+}
+
+function updateProgressBars(avgLightsOff, avgSleepDuration) {
+    // 关灯时间进度条逻辑
+    const lightsOffHour = avgLightsOff.getHours();
+    const lightsOffMinutes = avgLightsOff.getMinutes();
+    const lightsOffProgress = ((lightsOffHour * 60 + lightsOffMinutes) - (20 * 60)) / (8 * 60); // 20:00-04:00范围
+    
+    // 睡眠时间进度条逻辑
+    const sleepProgress = avgSleepDuration / 12; // 假设最大12小时
+    
+    // 更新进度条显示
+    const greenDots = document.querySelectorAll('.bar-dots.green span');
+    const yellowDots = document.querySelectorAll('.bar-dots.yellow span');
+    
+    greenDots.forEach((dot, index) => {
+        dot.style.opacity = index / greenDots.length <= lightsOffProgress ? '1' : '0.3';
+    });
+    
+    yellowDots.forEach((dot, index) => {
+        dot.style.opacity = index / yellowDots.length <= sleepProgress ? '1' : '0.3';
+    });
 }

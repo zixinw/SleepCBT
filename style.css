@@ -7,6 +7,8 @@
     --text-primary: #333333;
     --text-secondary: #666666;
     --border-color: #E0E0E0;
+    --error-color: #FF5252;
+    --warning-color: #FFC107;
 }
 
 * {
@@ -145,6 +147,7 @@ header {
     font-weight: bold;
     color: var(--text-primary);
     margin-top: 4px;
+    transition: color 0.3s ease;
 }
 
 /* 表单样式 */
@@ -456,4 +459,98 @@ input[type="range"]::-webkit-slider-thumb {
     .filter-container {
         flex-direction: column;
     }
+}
+
+/* 醒来记录样式 */
+.wake-record {
+    position: relative;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: var(--surface-color);
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.wake-record-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.remove-wake-record {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    background: var(--error-color);
+    color: white;
+    cursor: pointer;
+}
+
+.wake-activity-input input {
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .wake-record-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+}
+
+/* 图标显示样式 */
+.quality-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.quality-icon {
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+}
+
+.quality-icon i {
+    font-size: 24px;
+}
+
+.slider-value {
+    font-weight: bold;
+    color: var(--primary-color);
+    min-width: 40px;
+}
+
+.sync-container {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.sync-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 20px;
+    background: #0078d4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.sync-btn i {
+    font-size: 20px;
+}
+
+.sync-status {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--text-secondary);
 }

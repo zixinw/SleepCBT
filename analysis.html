@@ -6,6 +6,7 @@
     <title>睡眠分析</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
@@ -19,18 +20,33 @@
 
         <div class="analysis-section">
             <!-- 总体统计 -->
-            <div class="stats-container">
-                <div class="stat-card">
-                    <h3>平均睡眠时长</h3>
-                    <div class="stat-value" id="avgSleepDuration">--h --m</div>
-                </div>
-                <div class="stat-card">
-                    <h3>平均睡眠效率</h3>
-                    <div class="stat-value" id="avgSleepEfficiency">--%</div>
-                </div>
-                <div class="stat-card">
-                    <h3>平均入睡时间</h3>
-                    <div class="stat-value" id="avgFallAsleepTime">--分钟</div>
+            <div class="weekly-stats">
+                <h3 class="stats-title">Average</h3>
+                <div class="average-metrics">
+                    <div class="metric-row">
+                        <div class="metric-label">关灯时间</div>
+                        <div class="metric-value" id="avgLightsOffTime">23:45</div>
+                        <div class="metric-bar">
+                            <div class="bar-dots green">
+                                <span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span><span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-label">睡眠时间</div>
+                        <div class="metric-value" id="avgSleepDuration">5h 52m</div>
+                        <div class="metric-bar">
+                            <div class="bar-dots yellow">
+                                <span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span><span></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -77,6 +93,50 @@
             updateCharts(sleepHistory);
             generateAdvice(sleepHistory);
         }
+
+        function updateStatistics(sleepHistory) {
+            // 计算平均睡眠时长
+            const avgSleepDuration = sleepHistory.reduce((total, record) => {
+                const metrics = calculateSleepMetrics(record);
+                return total + metrics.sleepDurationHours;
+            }, 0) / sleepHistory.length;
+
+            const hours = Math.floor(avgSleepDuration);
+            const minutes = Math.round((avgSleepDuration - hours) * 60);
+            
+            const avgDurationElement = document.getElementById('avgSleepDuration');
+            avgDurationElement.textContent = `${hours}h ${minutes}m`;
+            avgDurationElement.style.color = getSleepDurationColor(avgSleepDuration);
+            
+            // ... 其他统计数据的处理 ...
+        }
+
+        function updateCharts(sleepHistory) {
+            // 睡眠趋势图
+            const sleepTrendChart = new Chart(document.getElementById('sleepTrendChart'), {
+                type: 'line',
+                data: {
+                    labels: sleepHistory.map(record => record.date),
+                    datasets: [{
+                        label: '睡眠时长',
+                        data: sleepHistory.map(record => {
+                            const metrics = calculateSleepMetrics(record);
+                            return metrics.sleepDurationHours;
+                        }),
+                        borderColor: 'rgb(75, 192, 192)',
+                        segment: {
+                            borderColor: context => {
+                                const value = context.p1.parsed.y;
+                                return getSleepDurationColor(value);
+                            }
+                        },
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
     </script>
 </body>
 </html>
