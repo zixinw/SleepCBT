@@ -367,19 +367,38 @@ function downloadFile(content, fileName, contentType) {
 // 初始化日历
 function initializeCalendar() {
     const weekDays = document.querySelector('.week-days');
-    const today = new Date();
     weekDays.innerHTML = ''; // 清空现有内容
     
-    for (let i = -3; i <= 3; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
+    // 获取本周的周日
+    const today = new Date();
+    const currentDay = today.getDay(); // 0-6, 0是周日
+    const sunday = new Date(today);
+    sunday.setDate(today.getDate() - currentDay);
+
+    // 创建周切换按钮
+    const prevWeek = document.createElement('button');
+    prevWeek.className = 'week-nav prev';
+    prevWeek.innerHTML = '&lt;';
+    prevWeek.onclick = () => changeWeek(-1);
+
+    const nextWeek = document.createElement('button');
+    nextWeek.className = 'week-nav next';
+    nextWeek.innerHTML = '&gt;';
+    nextWeek.onclick = () => changeWeek(1);
+
+    weekDays.appendChild(prevWeek);
+
+    // 显示一周的日期
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(sunday);
+        date.setDate(sunday.getDate() + i);
         const dateString = date.toISOString().split('T')[0];
         
         const dayElement = document.createElement('div');
-        dayElement.className = `day-item ${i === 0 ? 'current' : ''}`;
+        dayElement.className = `day-item ${date.toDateString() === today.toDateString() ? 'current' : ''}`;
         dayElement.dataset.date = dateString;
         dayElement.innerHTML = `
-            <span class="weekday">周${['日','一','二','三','四','五','六'][date.getDay()]}</span>
+            <span class="weekday">周${['日','一','二','三','四','五','六'][i]}</span>
             <span class="date">${date.getDate()}</span>
         `;
         
@@ -393,34 +412,61 @@ function initializeCalendar() {
         
         weekDays.appendChild(dayElement);
     }
+
+    weekDays.appendChild(nextWeek);
+}
+
+// 添加周切换功能
+function changeWeek(offset) {
+    const currentDate = new Date(document.querySelector('.day-item').dataset.date);
+    currentDate.setDate(currentDate.getDate() + offset * 7);
+    initializeCalendar(currentDate);
 }
 
 // 修改初始化函数
 function initializeForm() {
     // 清空所有时间输入
-    document.getElementById('bedTime').value = '';
-    document.getElementById('lightsOffTime').value = '';
-    document.getElementById('timeToSleep').value = '';
-    document.getElementById('finalWakeTime').value = '';
-    document.getElementById('getUpTime').value = '';
+    const timeInputs = ['bedTime', 'lightsOffTime', 'timeToSleep', 'finalWakeTime', 'getUpTime'];
+    timeInputs.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) input.value = '';
+    });
 
     // 重置显示的指标
-    document.getElementById('actualSleepTime').textContent = '--:-- - --:--';
-    document.getElementById('sleepDuration').textContent = '--h --m';
-    document.getElementById('fallAsleepSpeed').textContent = '--分钟';
-    document.getElementById('effectiveSleep').textContent = '--h --m';
-    document.getElementById('efficiencyNumber').textContent = '--';
+    const metrics = {
+        'actualSleepTime': '--:-- - --:--',
+        'sleepDuration': '--h --m',
+        'fallAsleepSpeed': '--分钟',
+        'effectiveSleep': '--h --m',
+        'efficiencyNumber': '--'
+    };
+
+    Object.entries(metrics).forEach(([id, value]) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value;
+    });
 
     // 重置睡眠质量和疲劳度滑块
-    const sleepQuality = document.getElementById('sleepQuality');
-    const fatigueLevel = document.getElementById('fatigueLevel');
-    if(sleepQuality) sleepQuality.value = 3;
-    if(fatigueLevel) fatigueLevel.value = 3;
+    const sliders = ['sleepQuality', 'fatigueLevel'];
+    sliders.forEach(id => {
+        const slider = document.getElementById(id);
+        const valueDisplay = document.getElementById(`${id}Value`);
+        if (slider) slider.value = 3;
+        if (valueDisplay) valueDisplay.textContent = '3分';
+    });
     
     // 清空醒来记录
     const wakeRecords = document.getElementById('wakeRecords');
-    if(wakeRecords) wakeRecords.innerHTML = '';
+    if (wakeRecords) wakeRecords.innerHTML = '';
     wakeRecordCount = 0;
+
+    // 重置梦境相关
+    const hadDream = document.getElementById('hadDream');
+    const dreamContent = document.getElementById('dreamContent');
+    if (hadDream) hadDream.checked = false;
+    if (dreamContent) dreamContent.value = '';
+    const dreamContainer = document.getElementById('dreamContentContainer');
+    if (dreamContainer) dreamContainer.style.display = 'none';
 }
 
 // 修改日期切换时的数据加载函数

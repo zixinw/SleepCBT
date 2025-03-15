@@ -61,21 +61,23 @@ header {
     padding: 15px;
     margin-bottom: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: relative;
 }
 
 .week-days {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    margin-top: 10px;
+    margin: 10px 0;
 }
 
 .day-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
-    border-radius: 8px;
+    flex: 1;
+    text-align: center;
+    padding: 8px;
     cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.2s;
 }
 
 .day-item.current {
@@ -595,4 +597,17 @@ input[type="range"]::-webkit-slider-thumb {
 
 #githubLoginBtn i {
     font-size: 16px;
+}
+
+.week-nav {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 10px;
+}
+
+.week-nav:hover {
+    color: var(--secondary-color);
 }
