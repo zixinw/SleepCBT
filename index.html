@@ -16,8 +16,12 @@
         <header>
             <h1>睡眠记录</h1>
             <div class="nav-buttons">
-                <button id="historyBtn" class="nav-btn">历史记录</button>
-                <button id="analysisBtn" class="nav-btn">数据分析</button>
+                <button onclick="window.location.href='history.html'" class="nav-btn">历史记录</button>
+                <button onclick="window.location.href='analysis.html'" class="nav-btn">数据分析</button>
+                <button id="githubLoginBtn" class="nav-btn">
+                    <i class="fab fa-github"></i> 连接GitHub
+                </button>
+                <span id="syncStatus" class="sync-status"></span>
             </div>
         </header>
 
@@ -198,9 +202,24 @@
             </button>
             <div id="syncStatus" class="sync-status"></div>
         </div>
+
+        <!-- 在页面底部添加设置面板 -->
+        <div class="settings-panel" style="display: none;">
+            <h3>设置</h3>
+            <div class="settings-content">
+                <div class="setting-item">
+                    <label>GitHub 同步状态：</label>
+                    <span id="syncStatus">未连接</span>
+                </div>
+                <div class="setting-item">
+                    <button id="logoutBtn" class="secondary-btn">断开连接</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
+    <script src="github-sync.js"></script>
     <script>
     document.getElementById('hadDream').addEventListener('change', function() {
         const container = document.getElementById('dreamContentContainer');

@@ -1,4 +1,6 @@
-document.addEventListener('DOMContentLoaded', function() {
+const githubSync = new GitHubSync();
+
+document.addEventListener('DOMContentLoaded', async function() {
     // 设置今天的日期
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('dateSelect').value = today;
@@ -81,14 +83,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 初始化OneDrive同步
-    const oneDriveSync = new OneDriveSync();
-
-    // 添加登录按钮事件监听
-    document.getElementById('msLoginBtn').addEventListener('click', async () => {
-        await oneDriveSync.login();
-        await oneDriveSync.autoSync();
+    // 添加登出按钮事件
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        if (confirm('确定要断开 GitHub 连接吗？本地数据将保留。')) {
+            githubSync.logout();
+        }
     });
+
+    // 初始化 GitHub 同步
+    await githubSync.init();
+    
+    // 添加GitHub登录按钮事件
+    document.getElementById('githubLoginBtn').addEventListener('click', () => {
+        githubSync.login();
+    });
+
+    // 在页面加载时调用初始化
+    initializeForm();
 });
 
 // 全局变量（确保在 DOMContentLoaded 外部定义）
@@ -231,9 +242,9 @@ async function saveSleepData(data) {
     sleepHistory.push(data);
     localStorage.setItem('sleepHistory', JSON.stringify(sleepHistory));
     
-    // 如果已连接OneDrive，自动同步
-    if (oneDriveSync.graphClient) {
-        await oneDriveSync.uploadData();
+    // 同步到GitHub
+    if (githubSync.isLoggedIn) {
+        await githubSync.syncData(sleepHistory);
     }
 }
 
@@ -384,19 +395,46 @@ function initializeCalendar() {
     }
 }
 
-// 添加加载日期数据功能
+// 修改初始化函数
+function initializeForm() {
+    // 清空所有时间输入
+    document.getElementById('bedTime').value = '';
+    document.getElementById('lightsOffTime').value = '';
+    document.getElementById('timeToSleep').value = '';
+    document.getElementById('finalWakeTime').value = '';
+    document.getElementById('getUpTime').value = '';
+
+    // 重置显示的指标
+    document.getElementById('actualSleepTime').textContent = '--:-- - --:--';
+    document.getElementById('sleepDuration').textContent = '--h --m';
+    document.getElementById('fallAsleepSpeed').textContent = '--分钟';
+    document.getElementById('effectiveSleep').textContent = '--h --m';
+    document.getElementById('efficiencyNumber').textContent = '--';
+
+    // 重置睡眠质量和疲劳度滑块
+    const sleepQuality = document.getElementById('sleepQuality');
+    const fatigueLevel = document.getElementById('fatigueLevel');
+    if(sleepQuality) sleepQuality.value = 3;
+    if(fatigueLevel) fatigueLevel.value = 3;
+    
+    // 清空醒来记录
+    const wakeRecords = document.getElementById('wakeRecords');
+    if(wakeRecords) wakeRecords.innerHTML = '';
+    wakeRecordCount = 0;
+}
+
+// 修改日期切换时的数据加载函数
 function loadDayData(date) {
     const sleepHistory = JSON.parse(localStorage.getItem('sleepHistory') || '[]');
     const dayData = sleepHistory.find(record => record.date === date);
     
     if (dayData) {
-        // 填充表单数据
+        // 如果有数据则填充
         Object.keys(dayData).forEach(key => {
             const element = document.getElementById(key);
             if (element) {
                 if (element.type === 'checkbox') {
                     element.checked = dayData[key];
-                    // 触发梦境内容显示/隐藏
                     if (key === 'hadDream') {
                         document.getElementById('dreamContentContainer').style.display = 
                             dayData[key] ? 'block' : 'none';
@@ -408,9 +446,8 @@ function loadDayData(date) {
         });
         updateSleepMetrics(dayData);
     } else {
-        // 清空表单
-        document.getElementById('sleepForm').reset();
-        document.getElementById('dreamContentContainer').style.display = 'none';
+        // 如果没有数据则重置表单
+        initializeForm();
     }
 }
 
