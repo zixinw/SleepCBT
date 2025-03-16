@@ -267,11 +267,87 @@
         window.location.href = 'analysis.html';
     }
 
+    // 添加导出CSV功能
+    function exportToCSV() {
+        // 获取所有睡眠记录
+        const sleepData = JSON.parse(localStorage.getItem('sleepRecords')) || [];
+        
+        if (sleepData.length === 0) {
+            alert('没有可导出的睡眠记录');
+            return;
+        }
+        
+        // 创建CSV内容
+        let csvContent = "日期,上床时间,关灯时间,入睡时长(分钟),醒来次数,最终醒来时间,起床时间,睡眠质量,精神状态,入睡辅助,梦境记录\n";
+        
+        sleepData.forEach(record => {
+            const row = [
+                record.date,
+                record.bedTime,
+                record.lightsOffTime,
+                record.timeToSleep,
+                record.wakeCount,
+                record.finalWakeTime,
+                record.getUpTime,
+                record.sleepQuality,
+                record.fatigueLevel,
+                record.sleepAid || '',
+                record.dreamContent ? '有' : '无'
+            ];
+            
+            // 处理CSV中的特殊字符
+            const processedRow = row.map(item => {
+                if (typeof item === 'string' && (item.includes(',') || item.includes('"') || item.includes('\n'))) {
+                    return `"${item.replace(/"/g, '""')}"`;
+                }
+                return item;
+            });
+            
+            csvContent += processedRow.join(',') + '\n';
+        });
+        
+        // 创建下载链接
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `睡眠记录_${new Date().toISOString().slice(0, 10)}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // 添加导出JSON功能
+    function exportToJSON() {
+        const sleepData = JSON.parse(localStorage.getItem('sleepRecords')) || [];
+        
+        if (sleepData.length === 0) {
+            alert('没有可导出的睡眠记录');
+            return;
+        }
+        
+        const jsonString = JSON.stringify(sleepData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `睡眠记录_${new Date().toISOString().slice(0, 10)}.json`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         // ... 其他代码 ...
         
         // 添加醒来记录按钮事件监听
         document.getElementById('addWakeRecord').addEventListener('click', addWakeRecord);
+        
+        // 添加导出按钮事件监听
+        document.getElementById('exportCSV').addEventListener('click', exportToCSV);
+        document.getElementById('exportJSON').addEventListener('click', exportToJSON);
     });
     </script>
 </body>
