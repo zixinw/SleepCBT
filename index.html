@@ -337,6 +337,9 @@
         const firstDay = new Date(centerDate);
         firstDay.setDate(centerDate.getDate() - currentDay);
         
+        // 获取当前选中的日期字符串，用于比较
+        const selectedDateString = document.getElementById('dateSelect').value;
+        
         for (let i = 0; i < 7; i++) {
             const date = new Date(firstDay);
             date.setDate(firstDay.getDate() + i);
@@ -351,8 +354,8 @@
             // 检查是否是今天
             const isToday = date.toDateString() === new Date().toDateString();
             
-            // 检查是否是选中日期
-            const isSelected = date.toDateString() === centerDate.toDateString();
+            // 检查是否是选中日期 - 修改这里，直接比较日期字符串
+            const isSelected = dateString === selectedDateString;
             
             if (isToday) dayElement.classList.add('today');
             if (isSelected) dayElement.classList.add('selected');
@@ -364,12 +367,15 @@
             `;
             
             dayElement.addEventListener('click', function() {
+                // 更新日期选择器的值
                 document.getElementById('dateSelect').value = dateString;
-                loadSelectedDateData(date);
                 
                 // 更新选中状态
                 document.querySelectorAll('.day-item.selected').forEach(el => el.classList.remove('selected'));
                 this.classList.add('selected');
+                
+                // 加载选定日期的数据
+                loadSelectedDateData(date);
             });
             
             weekDaysContainer.appendChild(dayElement);
