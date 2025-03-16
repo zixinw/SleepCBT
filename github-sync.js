@@ -38,16 +38,7 @@ class GitHubSync {
         const tokenInput = prompt('请输入你的 GitHub Personal Access Token：');
         if (tokenInput) {
             this.setToken(tokenInput);
-            this.loadData().then(data => {
-                if (data) {
-                    // 更新UI显示同步状态
-                    document.getElementById('syncStatus').textContent = '数据已同步 ' + new Date().toLocaleTimeString();
-                    // 重新加载当前日期数据
-                    if (typeof loadCurrentDateData === 'function') {
-                        loadCurrentDateData();
-                    }
-                }
-            });
+            this.loadData(); // 加载已有数据
         }
     }
 
@@ -91,11 +82,9 @@ class GitHubSync {
                 await this.updateGist(data);
             }
             document.getElementById('syncStatus').textContent = '数据已同步 ' + new Date().toLocaleTimeString();
-            return true;
         } catch (error) {
             console.error('Sync failed:', error);
             document.getElementById('syncStatus').textContent = '同步失败';
-            return false;
         }
     }
 
@@ -143,7 +132,7 @@ class GitHubSync {
 
     // 加载数据
     async loadData() {
-        if (!this.isLoggedIn || !this.gistId) return null;
+        if (!this.isLoggedIn || !this.gistId) return;
 
         try {
             const response = await fetch(`https://api.github.com/gists/${this.gistId}`, {
@@ -155,61 +144,12 @@ class GitHubSync {
             const gist = await response.json();
             const data = JSON.parse(gist.files['sleep-data.json'].content);
             
-            // 将数据保存到本地存储，按日期分开存储
-            if (data && typeof data === 'object') {
-                Object.keys(data).forEach(date => {
-                    localStorage.setItem(`sleep_data_${date}`, JSON.stringify(data[date]));
-                });
-            }
-            
+            // 更新本地存储
+            localStorage.setItem('sleepHistory', JSON.stringify(data));
             return data;
         } catch (error) {
             console.error('Load failed:', error);
             return null;
         }
     }
-    
-    // 添加fetchDataFromGitHub函数，供index.html调用
-    async fetchDataFromGitHub() {
-        return await this.loadData();
-    }
-}
-
-// 创建全局实例
-const githubSync = new GitHubSync();
-
-// 页面加载时初始化
-document.addEventListener('DOMContentLoaded', function() {
-    githubSync.init();
-    
-    // 绑定登录按钮事件
-    const loginBtn = document.getElementById('githubLoginBtn');
-    if (loginBtn) {
-        loginBtn.addEventListener('click', function() {
-            githubSync.login();
-        });
-    }
-    
-    // 绑定登出按钮事件
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
-            githubSync.logout();
-            alert('已断开GitHub连接');
-            location.reload(); // 刷新页面
-        });
-    }
-});
-
-// 导出fetchDataFromGitHub函数，供index.html调用
-window.fetchDataFromGitHub = function(token) {
-    if (token && !githubSync.isLoggedIn) {
-        githubSync.setToken(token);
-    }
-    return githubSync.fetchDataFromGitHub();
-};
-
-// 导出保存数据的函数
-window.saveDataToGitHub = function(data) {
-    return githubSync.syncData(data);
-};
+} 
