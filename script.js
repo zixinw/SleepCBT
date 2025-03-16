@@ -248,12 +248,12 @@ function calculateSleepMetrics(data) {
         total + parseInt(record.duration), 0);
     const effectiveSleepMinutes = sleepDurationMinutes - wakeMinutes;
 
-    // 计算睡眠效率
-    const efficiency = ((effectiveSleepMinutes / timeInBed) * 100).toFixed(1);
+    // 计算睡眠效率 (使用实际睡眠时间而非有效睡眠时间)
+    const efficiency = ((sleepDurationMinutes / timeInBed) * 100).toFixed(1);
 
-    // 修改有效睡眠时间显示格式
-    const effectiveHours = Math.floor(effectiveSleepMinutes / 60);
-    const effectiveMinutes = Math.floor(effectiveSleepMinutes % 60);
+    // 修改有效睡眠时间显示格式 (现在用于显示在床时间)
+    const timeInBedHours = Math.floor(timeInBed / 60);
+    const timeInBedMinutes = Math.floor(timeInBed % 60);
 
     // 计算总睡眠时长（小时）
     const totalSleepHours = sleepDurationMinutes / 60;
@@ -264,7 +264,7 @@ function calculateSleepMetrics(data) {
         sleepDurationHours: totalSleepHours,
         sleepDurationColor: getSleepDurationColor(totalSleepHours),
         fallAsleepSpeed: `${timeToSleep}分钟`,
-        effectiveSleep: `${effectiveHours}h ${effectiveMinutes}m`,
+        effectiveSleep: `${timeInBedHours}h ${timeInBedMinutes}m`, // 现在显示在床时间
         efficiency: efficiency
     };
 }
@@ -605,6 +605,34 @@ function loadDayData(date) {
                 }
             }
         });
+        
+        // 加载醒来记录
+        if (dayData.wakeRecords && dayData.wakeRecords.length > 0) {
+            dayData.wakeRecords.forEach(record => {
+                const newRecord = document.createElement('div');
+                newRecord.className = 'form-group wake-record';
+                newRecord.innerHTML = `
+                    <label>醒来记录 #${++wakeRecordCount}</label>
+                    <div class="wake-record-grid">
+                        <div class="wake-time-input">
+                            <label>时间</label>
+                            <input type="time" class="wake-time" value="${record.time}" required>
+                        </div>
+                        <div class="wake-duration-input">
+                            <label>持续时间（分钟）</label>
+                            <input type="number" class="wake-duration" value="${record.duration}" min="1" required>
+                        </div>
+                        <div class="wake-activity-input">
+                            <label>醒来活动</label>
+                            <input type="text" class="wake-activity" value="${record.activity || ''}" placeholder="例如：上厕所、喝水...">
+                        </div>
+                    </div>
+                    <button type="button" class="remove-wake-record" onclick="removeWakeRecord(this)">删除</button>
+                `;
+                wakeRecords.appendChild(newRecord);
+            });
+        }
+        
         updateSleepMetrics(dayData);
     } else {
         // 如果没有数据则重置表单
@@ -730,4 +758,247 @@ function updateProgressBars(avgLightsOff, avgSleepDuration) {
     yellowDots.forEach((dot, index) => {
         dot.style.opacity = index / yellowDots.length <= sleepProgress ? '1' : '0.3';
     });
+}
+
+// 实时计算和数据保存功能优化
+
+// 我将帮您实现以下功能：
+// 1. 根据所选日期和表单输入实时计算核心卡片数据
+// 2. 保存数据时支持修改已有记录
+// 3. 表单输入变化时实时更新显示
+
+// 以下是代码修改：
+
+// 添加实时计算功能
+function setupRealTimeCalculation() {
+    // 需要监听变化的输入字段
+    const inputFields = [
+        'bedTime', 'lightsOffTime', 'timeToSleep', 
+        'finalWakeTime', 'getUpTime', 'wakeCount'
+    ];
+    
+    // 为每个字段添加事件监听
+    inputFields.forEach(fieldId => {
+        const element = document.getElementById(fieldId);
+        if (element) {
+            element.addEventListener('input', calculateRealTimeMetrics);
+        }
+    });
+    
+    // 监听醒来记录的变化
+    const wakeRecordsContainer = document.getElementById('wakeRecords');
+    if (wakeRecordsContainer) {
+        // 使用MutationObserver监听子元素变化
+        const observer = new MutationObserver(calculateRealTimeMetrics);
+        observer.observe(wakeRecordsContainer, { childList: true, subtree: true });
+    }
+}
+
+// 实时计算指标函数
+function calculateRealTimeMetrics() {
+    // 检查必填字段是否已填写
+    const requiredFields = ['bedTime', 'lightsOffTime', 'timeToSleep', 'finalWakeTime', 'getUpTime'];
+    const allFilled = requiredFields.every(field => {
+        const element = document.getElementById(field);
+        return element && element.value;
+    });
+    
+    if (!allFilled) return; // 如果有必填字段未填写，不进行计算
+    
+    // 收集表单数据
+    const wakeRecords = Array.from(document.querySelectorAll('.wake-record')).map(record => {
+        const timeInput = record.querySelector('.wake-time');
+        const durationInput = record.querySelector('.wake-duration');
+        const activityInput = record.querySelector('.wake-activity');
+        
+        return {
+            time: timeInput ? timeInput.value : '',
+            duration: durationInput ? durationInput.value : '0',
+            activity: activityInput ? activityInput.value : ''
+        };
+    });
+    
+    const data = {
+        date: document.getElementById('dateSelect').value,
+        bedTime: document.getElementById('bedTime').value,
+        lightsOffTime: document.getElementById('lightsOffTime').value,
+        timeToSleep: document.getElementById('timeToSleep').value,
+        wakeCount: document.getElementById('wakeCount').value,
+        wakeRecords: wakeRecords,
+        finalWakeTime: document.getElementById('finalWakeTime').value,
+        getUpTime: document.getElementById('getUpTime').value,
+        sleepQuality: document.getElementById('sleepQuality').value,
+        sleepAid: document.getElementById('sleepAid').value || '',
+        dreamContent: document.getElementById('dreamContent').value || '',
+        fatigueLevel: document.getElementById('fatigueLevel').value
+    };
+    
+    // 更新显示
+    updateSleepMetrics(data);
+}
+
+// 修改保存数据函数，支持更新已有记录
+async function saveSleepData(data) {
+    const sleepHistory = JSON.parse(localStorage.getItem('sleepHistory') || '[]');
+    const existingIndex = sleepHistory.findIndex(record => record.date === data.date);
+    
+    if (existingIndex >= 0) {
+        // 更新已有记录
+        sleepHistory[existingIndex] = data;
+    } else {
+        // 添加新记录
+        sleepHistory.push(data);
+    }
+    
+    // 按日期排序
+    sleepHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    localStorage.setItem('sleepHistory', JSON.stringify(sleepHistory));
+    
+    // 同步到GitHub
+    if (githubSync.isLoggedIn) {
+        await githubSync.syncData(sleepHistory);
+    }
+    
+    return existingIndex >= 0 ? '记录已更新！' : '记录已保存！';
+}
+
+// 修改表单提交处理函数
+function handleFormSubmit(e) {
+    e.preventDefault();
+    
+    // 收集醒来记录数据
+    const wakeRecords = Array.from(document.querySelectorAll('.wake-record')).map(record => ({
+        time: record.querySelector('.wake-time').value,
+        duration: record.querySelector('.wake-duration').value,
+        activity: record.querySelector('.wake-activity').value
+    }));
+
+    // 收集表单数据
+    const data = {
+        date: document.getElementById('dateSelect').value,
+        bedTime: document.getElementById('bedTime').value,
+        lightsOffTime: document.getElementById('lightsOffTime').value,
+        timeToSleep: document.getElementById('timeToSleep').value,
+        wakeCount: document.getElementById('wakeCount').value,
+        wakeRecords: wakeRecords,
+        finalWakeTime: document.getElementById('finalWakeTime').value,
+        getUpTime: document.getElementById('getUpTime').value,
+        sleepQuality: document.getElementById('sleepQuality').value,
+        sleepAid: document.getElementById('sleepAid').value || '',
+        dreamContent: document.getElementById('dreamContent').value || '',
+        fatigueLevel: document.getElementById('fatigueLevel').value,
+        hadDream: document.getElementById('hadDream').checked
+    };
+
+    // 计算睡眠指标
+    updateSleepMetrics(data);
+
+    // 保存到localStorage
+    saveSleepData(data).then(message => {
+        alert(message);
+        
+        // 更新图表
+        updateCharts();
+        
+        // 更新日历上的标记
+        updateCalendarMarkers();
+    });
+}
+
+// 添加日历标记更新函数
+function updateCalendarMarkers() {
+    const sleepHistory = JSON.parse(localStorage.getItem('sleepHistory') || '[]');
+    const dayItems = document.querySelectorAll('.day-item');
+    
+    dayItems.forEach(item => {
+        const date = item.dataset.date;
+        const hasRecord = sleepHistory.some(record => record.date === date);
+        
+        if (hasRecord) {
+            item.classList.add('has-record');
+        } else {
+            item.classList.remove('has-record');
+        }
+    });
+}
+
+// 修改初始化函数，添加实时计算设置
+document.addEventListener('DOMContentLoaded', async function() {
+    // ... 现有代码 ...
+    
+    // 添加表单提交事件监听
+    const sleepForm = document.getElementById('sleepForm');
+    if (sleepForm) {
+        sleepForm.addEventListener('submit', handleFormSubmit);
+    }
+    
+    // 设置实时计算
+    setupRealTimeCalculation();
+    
+    // 初始化日历标记
+    updateCalendarMarkers();
+    
+    // ... 其他现有代码 ...
+});
+
+// 修改日期切换时的数据加载函数
+function loadDayData(date) {
+    const sleepHistory = JSON.parse(localStorage.getItem('sleepHistory') || '[]');
+    const dayData = sleepHistory.find(record => record.date === date);
+    
+    // 清空醒来记录
+    const wakeRecords = document.getElementById('wakeRecords');
+    if (wakeRecords) wakeRecords.innerHTML = '';
+    wakeRecordCount = 0;
+    
+    if (dayData) {
+        // 如果有数据则填充
+        Object.keys(dayData).forEach(key => {
+            const element = document.getElementById(key);
+            if (element) {
+                if (element.type === 'checkbox') {
+                    element.checked = dayData[key];
+                    if (key === 'hadDream') {
+                        document.getElementById('dreamContentContainer').style.display = 
+                            dayData[key] ? 'block' : 'none';
+                    }
+                } else {
+                    element.value = dayData[key];
+                }
+            }
+        });
+        
+        // 加载醒来记录
+        if (dayData.wakeRecords && dayData.wakeRecords.length > 0) {
+            dayData.wakeRecords.forEach(record => {
+                const newRecord = document.createElement('div');
+                newRecord.className = 'form-group wake-record';
+                newRecord.innerHTML = `
+                    <label>醒来记录 #${++wakeRecordCount}</label>
+                    <div class="wake-record-grid">
+                        <div class="wake-time-input">
+                            <label>时间</label>
+                            <input type="time" class="wake-time" value="${record.time}" required>
+                        </div>
+                        <div class="wake-duration-input">
+                            <label>持续时间（分钟）</label>
+                            <input type="number" class="wake-duration" value="${record.duration}" min="1" required>
+                        </div>
+                        <div class="wake-activity-input">
+                            <label>醒来活动</label>
+                            <input type="text" class="wake-activity" value="${record.activity || ''}" placeholder="例如：上厕所、喝水...">
+                        </div>
+                    </div>
+                    <button type="button" class="remove-wake-record" onclick="removeWakeRecord(this)">删除</button>
+                `;
+                wakeRecords.appendChild(newRecord);
+            });
+        }
+        
+        updateSleepMetrics(dayData);
+    } else {
+        // 如果没有数据则重置表单
+        initializeForm();
+    }
 }
