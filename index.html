@@ -30,11 +30,7 @@
                 <input type="date" id="dateSelect">
             </div>
             <div class="week-days">
-                <div class="day-item current">
-                    <span class="weekday">周五</span>
-                    <span class="date">11</span>
-                </div>
-                <!-- 其他日期会通过JavaScript动态生成 -->
+                <!-- 日期会通过JavaScript动态生成 -->
             </div>
         </div>
 
@@ -73,22 +69,30 @@
         <!-- 记录表单 -->
         <form id="sleepForm">
             <div class="form-group">
-                <label>上床时间</label>
+                <label for="bedTime">
+                    <i class="fas fa-bed"></i> 上床时间
+                </label>
                 <input type="time" id="bedTime" required>
             </div>
 
             <div class="form-group">
-                <label>关灯时间</label>
+                <label for="lightsOffTime">
+                    <i class="fas fa-lightbulb"></i> 关灯时间
+                </label>
                 <input type="time" id="lightsOffTime" required>
             </div>
 
             <div class="form-group">
-                <label>入睡时长（分钟）</label>
+                <label for="timeToSleep">
+                    <i class="fas fa-moon"></i> 入睡时长
+                </label>
                 <input type="number" id="timeToSleep" required min="0">
             </div>
 
             <div class="form-group">
-                <label>醒来次数</label>
+                <label for="wakeCount">
+                    <i class="fas fa-clock"></i> 醒来次数
+                </label>
                 <input type="number" id="wakeCount" min="0" value="0">
             </div>
 
@@ -99,49 +103,80 @@
             <button type="button" id="addWakeRecord" class="secondary-btn">添加醒来记录</button>
 
             <div class="form-group">
-                <label>最终醒来时间</label>
+                <label for="finalWakeTime">
+                    <i class="fas fa-sun"></i> 最终醒来时间
+                </label>
                 <input type="time" id="finalWakeTime" required>
             </div>
 
             <div class="form-group">
-                <label>起床时间</label>
+                <label for="getUpTime">
+                    <i class="fas fa-walking"></i> 起床时间
+                </label>
                 <input type="time" id="getUpTime" required>
             </div>
 
             <!-- 评分滑块 -->
             <div class="ratings-container">
                 <div class="form-group half-width">
-                    <label>睡眠质量</label>
-                    <input type="range" id="sleepQuality" min="1" max="5" value="3">
-                    <div class="quality-display">
-                        <div id="sleepQualityIcon" class="quality-icon"></div>
-                        <span id="sleepQualityValue">3分</span>
+                    <label for="sleepQuality">
+                        <i class="fas fa-star"></i> 睡眠质量
+                    </label>
+                    <div class="slider-container">
+                        <input type="range" id="sleepQuality" min="1" max="5" value="3">
+                        <div class="slider-labels">
+                            <span>很差</span>
+                            <span>较差</span>
+                            <span>一般</span>
+                            <span>较好</span>
+                            <span>很好</span>
+                        </div>
+                        <div class="quality-display">
+                            <div id="sleepQualityIcon" class="quality-icon"></div>
+                            <span id="sleepQualityValue">3分</span>
+                        </div>
                     </div>
                 </div>
                 <div class="form-group half-width">
-                    <label>睡醒后的精神状态</label>
-                    <input type="range" id="fatigueLevel" min="1" max="5" value="3">
-                    <div class="quality-display">
-                        <div id="fatigueLevelIcon" class="quality-icon"></div>
-                        <span id="fatigueLevelValue">3分</span>
+                    <label for="fatigueLevel">
+                        <i class="fas fa-battery-three-quarters"></i> 睡醒后的精神状态
+                    </label>
+                    <div class="slider-container">
+                        <input type="range" id="fatigueLevel" min="1" max="5" value="3">
+                        <div class="slider-labels">
+                            <span>非常疲惫</span>
+                            <span>较为疲惫</span>
+                            <span>一般</span>
+                            <span>较为清醒</span>
+                            <span>精神饱满</span>
+                        </div>
+                        <div class="quality-display">
+                            <div id="fatigueLevelIcon" class="quality-icon"></div>
+                            <span id="fatigueLevelValue">3分</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="form-group">
-                <label>入睡辅助</label>
+                <label for="sleepAid">
+                    <i class="fas fa-pills"></i> 入睡辅助
+                </label>
                 <input type="text" id="sleepAid" placeholder="例如：冥想、阅读、音乐...">
             </div>
 
-            <div class="form-group">
-                <div class="dream-toggle">
-                    <label>
-                        <input type="checkbox" id="hadDream">
-                        是否做梦
+            <div class="dream-toggle">
+                <label for="hadDream">
+                    <i class="fas fa-cloud-moon"></i> 梦境记录
+                    <input type="checkbox" id="hadDream">
+                </label>
+            </div>
+            <div id="dreamContentContainer" style="display: none;">
+                <div class="form-group">
+                    <label for="dreamContent">
+                        <i class="fas fa-edit"></i> 记录梦境内容
                     </label>
-                </div>
-                <div id="dreamContentContainer" style="display: none;">
-                    <textarea id="dreamContent" placeholder="记录梦境内容..."></textarea>
+                    <textarea id="dreamContent" placeholder="描述你的梦..."></textarea>
                 </div>
             </div>
 
@@ -181,18 +216,14 @@
             <h3>设置</h3>
             <div class="settings-content">
                 <div class="setting-item">
-                    <label>GitHub 同步状态：</label>
-                    <span id="syncStatus">未连接</span>
-                </div>
-                <div class="setting-item">
                     <button id="logoutBtn" class="secondary-btn">断开连接</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
     <script src="github-sync.js"></script>
+    <script src="script.js"></script>
     <script>
     document.getElementById('hadDream').addEventListener('change', function() {
         const container = document.getElementById('dreamContentContainer');
@@ -235,6 +266,13 @@
     function showAnalysis() {
         window.location.href = 'analysis.html';
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // ... 其他代码 ...
+        
+        // 添加醒来记录按钮事件监听
+        document.getElementById('addWakeRecord').addEventListener('click', addWakeRecord);
+    });
     </script>
 </body>
 </html>

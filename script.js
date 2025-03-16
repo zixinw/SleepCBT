@@ -4,7 +4,48 @@ document.addEventListener('DOMContentLoaded', async function() {
     // 设置今天的日期
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('dateSelect').value = today;
+
+    // 初始化日历
     initializeCalendar();
+
+    // 初始化滑块
+    initializeSliders();
+
+    // 初始化表单
+    initializeForm();
+
+    // 添加醒来记录按钮事件监听
+    const addWakeRecordBtn = document.getElementById('addWakeRecord');
+    if (addWakeRecordBtn) {
+        addWakeRecordBtn.addEventListener('click', addWakeRecord);
+    }
+
+    // 初始化 GitHub 同步
+    await githubSync.init();
+
+    // 添加GitHub登录按钮事件
+    const githubLoginBtn = document.getElementById('githubLoginBtn');
+    if (githubLoginBtn) {
+        githubLoginBtn.addEventListener('click', () => {
+            githubSync.login();
+        });
+    }
+
+    // 添加表单提交事件监听
+    const sleepForm = document.getElementById('sleepForm');
+    if (sleepForm) {
+        sleepForm.addEventListener('submit', handleFormSubmit);
+    }
+
+    // 添加日期选择事件监听
+    const dateSelect = document.getElementById('dateSelect');
+    if (dateSelect) {
+        dateSelect.addEventListener('change', function() {
+            const selectedDate = new Date(this.value);
+            initializeCalendar(selectedDate);
+            loadDayData(this.value);
+        });
+    }
 
     // 处理滑块值的显示
     initializeSliders();
@@ -89,19 +130,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             githubSync.logout();
         }
     });
-
-    // 初始化 GitHub 同步
-    const githubLoginBtn = document.getElementById('githubLoginBtn');
-    if (githubLoginBtn) {
-        githubLoginBtn.addEventListener('click', () => {
-            githubSync.login();
-        });
-    }
-
-    await githubSync.init();
-    
-    // 在页面加载时调用初始化
-    initializeForm();
 });
 
 // 全局变量（确保在 DOMContentLoaded 外部定义）
@@ -109,25 +137,27 @@ let wakeRecordCount = 0;
 
 // 定义图标映射
 const qualityIcons = {
-    1: '<i class="fas fa-face-tired" style="color: #ff4444;"></i>',        // 很差
-    2: '<i class="fas fa-face-frown" style="color: #ffbb33;"></i>',       // 较差
-    3: '<i class="fas fa-face-meh" style="color: #00C851;"></i>',         // 一般
-    4: '<i class="fas fa-face-smile" style="color: #33b5e5;"></i>',       // 较好
-    5: '<i class="fas fa-face-laugh-beam" style="color: #4080FF;"></i>'   // 很好
+    1: '<i class="fas fa-face-sad-cry" style="color: #ff4444;"></i>',      // 很差
+    2: '<i class="fas fa-face-sad-tear" style="color: #ffbb33;"></i>',     // 较差
+    3: '<i class="fas fa-face-meh" style="color: #00C851;"></i>',          // 一般
+    4: '<i class="fas fa-face-smile" style="color: #33b5e5;"></i>',        // 较好
+    5: '<i class="fas fa-face-laugh-beam" style="color: #4080FF;"></i>'    // 很好
 };
 
 const fatigueIcons = {
-    1: '<i class="fas fa-battery-empty" style="color: #ff4444;"></i>',    // 非常疲惫
-    2: '<i class="fas fa-battery-quarter" style="color: #ffbb33;"></i>',  // 较为疲惫
-    3: '<i class="fas fa-battery-half" style="color: #00C851;"></i>',     // 一般
+    1: '<i class="fas fa-battery-empty" style="color: #ff4444;"></i>',     // 非常疲惫
+    2: '<i class="fas fa-battery-quarter" style="color: #ffbb33;"></i>',   // 较为疲惫
+    3: '<i class="fas fa-battery-half" style="color: #00C851;"></i>',      // 一般
     4: '<i class="fas fa-battery-three-quarters" style="color: #33b5e5;"></i>', // 较为清醒
-    5: '<i class="fas fa-battery-full" style="color: #4080FF;"></i>'      // 精神饱满
+    5: '<i class="fas fa-battery-full" style="color: #4080FF;"></i>'       // 精神饱满
 };
 
 // 更新图标显示函数
 function updateQualityIcon(value, type, element) {
     const icons = type === 'sleep' ? qualityIcons : fatigueIcons;
-    element.innerHTML = icons[value];
+    if (element && icons[value]) {
+        element.innerHTML = icons[value];
+    }
 }
 
 // 修改滑块初始化函数
@@ -154,15 +184,17 @@ function initializeSliders() {
         const valueDisplay = document.getElementById(config.valueId);
         const iconDisplay = document.getElementById(config.iconId);
         
-        // 初始化显示
-        if (valueDisplay) valueDisplay.textContent = `${slider.value}分`;
-        if (iconDisplay) updateQualityIcon(slider.value, config.type, iconDisplay);
-        
-        // 监听变化
-        slider.addEventListener('input', function() {
-            if (valueDisplay) valueDisplay.textContent = `${this.value}分`;
-            if (iconDisplay) updateQualityIcon(this.value, config.type, iconDisplay);
-        });
+        if (valueDisplay && iconDisplay) {
+            // 初始化显示
+            valueDisplay.textContent = `${slider.value}分`;
+            updateQualityIcon(slider.value, config.type, iconDisplay);
+            
+            // 监听变化
+            slider.addEventListener('input', function() {
+                valueDisplay.textContent = `${this.value}分`;
+                updateQualityIcon(this.value, config.type, iconDisplay);
+            });
+        }
     });
 }
 
@@ -370,64 +402,140 @@ function downloadFile(content, fileName, contentType) {
     window.URL.revokeObjectURL(url);
 }
 
-// 初始化日历
-function initializeCalendar(startDate = new Date()) {
+// 修改日期选择器的事件监听
+document.addEventListener('DOMContentLoaded', function() {
+    const dateSelect = document.getElementById('dateSelect');
+    
+    // 监听日期选择变化
+    dateSelect.addEventListener('change', function() {
+        const selectedDate = new Date(this.value);
+        initializeCalendar(selectedDate);
+        loadDayData(this.value);
+    });
+    
+    // 初始化为今天的日期
+    const today = new Date();
+    const todayString = today.toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).split('/').join('-');
+    
+    dateSelect.value = todayString;
+    initializeCalendar(today);
+    loadDayData(todayString);
+});
+
+function initializeCalendar(selectedDate = new Date()) {
     const weekDays = document.querySelector('.week-days');
-    if (!weekDays) return; // 确保元素存在
+    if (!weekDays) return;
     
     weekDays.innerHTML = '';
     
-    // 获取本周的周日
-    const sunday = new Date(startDate);
-    sunday.setDate(sunday.getDate() - sunday.getDay());
+    // 处理时区问题：确保使用本地时间
+    const localDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000);
     
-    // 添加周导航按钮
-    const prevWeek = document.createElement('button');
-    prevWeek.className = 'week-nav prev';
-    prevWeek.innerHTML = '&lt;';
-    prevWeek.onclick = () => {
-        const newDate = new Date(sunday);
-        newDate.setDate(newDate.getDate() - 7);
-        initializeCalendar(newDate);
-    };
-
-    const nextWeek = document.createElement('button');
-    nextWeek.className = 'week-nav next';
-    nextWeek.innerHTML = '&gt;';
-    nextWeek.onclick = () => {
-        const newDate = new Date(sunday);
-        newDate.setDate(newDate.getDate() + 7);
-        initializeCalendar(newDate);
-    };
-
-    weekDays.appendChild(prevWeek);
-
-    // 显示日期
-    for (let i = 0; i < 7; i++) {
+    // 获取所选日期所在周的周日
+    const sunday = new Date(localDate);
+    sunday.setDate(localDate.getDate() - localDate.getDay());
+    
+    weekDays.innerHTML = `
+        <button class="week-nav prev">&lt;</button>
+        <div class="days-container">
+            <div class="day-item">
+                <span class="weekday">周日</span>
+                <span class="date"></span>
+            </div>
+            <div class="day-item">
+                <span class="weekday">周一</span>
+                <span class="date"></span>
+            </div>
+            <div class="day-item">
+                <span class="weekday">周二</span>
+                <span class="date"></span>
+            </div>
+            <div class="day-item">
+                <span class="weekday">周三</span>
+                <span class="date"></span>
+            </div>
+            <div class="day-item">
+                <span class="weekday">周四</span>
+                <span class="date"></span>
+            </div>
+            <div class="day-item">
+                <span class="weekday">周五</span>
+                <span class="date"></span>
+            </div>
+            <div class="day-item">
+                <span class="weekday">周六</span>
+                <span class="date"></span>
+            </div>
+        </div>
+        <button class="week-nav next">&gt;</button>
+    `;
+    
+    // 填充日期
+    const dayItems = weekDays.querySelectorAll('.day-item');
+    const dateSelect = document.getElementById('dateSelect');
+    const selectedDateString = dateSelect.value;
+    
+    dayItems.forEach((item, index) => {
         const date = new Date(sunday);
-        date.setDate(sunday.getDate() + i);
-        const dateString = date.toISOString().split('T')[0];
+        date.setDate(sunday.getDate() + index);
+        // 使用 toLocaleDateString 来获取正确的日期字符串
+        const dateString = date.toLocaleDateString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).split('/').join('-');
         
-        const dayElement = document.createElement('div');
-        dayElement.className = `day-item ${date.toDateString() === new Date().toDateString() ? 'current' : ''}`;
-        dayElement.dataset.date = dateString;
-        dayElement.innerHTML = `
-            <span class="weekday">周${['日','一','二','三','四','五','六'][i]}</span>
-            <span class="date">${date.getDate()}</span>
-        `;
+        const dateSpan = item.querySelector('.date');
+        dateSpan.textContent = date.getDate();
         
-        dayElement.addEventListener('click', function() {
-            document.querySelectorAll('.day-item').forEach(item => 
-                item.classList.remove('current'));
+        item.dataset.date = dateString;
+        
+        // 设置选中日期的样式
+        if (dateString === selectedDateString) {
+            item.classList.add('current');
+        } else {
+            item.classList.remove('current');
+        }
+        
+        // 添加点击事件
+        item.addEventListener('click', function() {
+            dayItems.forEach(di => di.classList.remove('current'));
             this.classList.add('current');
-            document.getElementById('dateSelect').value = this.dataset.date;
+            dateSelect.value = this.dataset.date;
             loadDayData(this.dataset.date);
         });
-        
-        weekDays.appendChild(dayElement);
-    }
-
-    weekDays.appendChild(nextWeek);
+    });
+    
+    // 添加周切换事件
+    weekDays.querySelector('.prev').addEventListener('click', () => {
+        const newDate = new Date(sunday);
+        newDate.setDate(newDate.getDate() - 7);
+        const newDateString = newDate.toLocaleDateString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).split('/').join('-');
+        dateSelect.value = newDateString;
+        initializeCalendar(newDate);
+        loadDayData(newDateString);
+    });
+    
+    weekDays.querySelector('.next').addEventListener('click', () => {
+        const newDate = new Date(sunday);
+        newDate.setDate(newDate.getDate() + 7);
+        const newDateString = newDate.toLocaleDateString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).split('/').join('-');
+        dateSelect.value = newDateString;
+        initializeCalendar(newDate);
+        loadDayData(newDateString);
+    });
 }
 
 // 修改初始化函数
@@ -524,8 +632,6 @@ function getSleepEfficiencyColor(efficiency) {
 // 添加醒来记录的函数
 function addWakeRecord() {
     const wakeRecords = document.getElementById('wakeRecords');
-    if (!wakeRecords) return;
-
     const newRecord = document.createElement('div');
     newRecord.className = 'form-group wake-record';
     newRecord.innerHTML = `

@@ -68,31 +68,68 @@ header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 5px;
     margin: 10px 0;
+    padding: 10px;
+    background: var(--surface-color);
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.days-container {
+    display: flex;
+    flex: 1;
+    justify-content: space-between;
+    gap: 5px;
 }
 
 .day-item {
     flex: 1;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: 8px;
     cursor: pointer;
     border-radius: 8px;
-    transition: background-color 0.2s;
+    transition: all 0.3s ease;
+}
+
+.day-item .weekday {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.day-item .date {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--text-primary);
 }
 
 .day-item.current {
     background: var(--primary-color);
+}
+
+.day-item.current .weekday,
+.day-item.current .date {
     color: white;
 }
 
-.weekday {
-    font-size: 12px;
-    color: var(--text-secondary);
+.week-nav {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
 }
 
-.date {
-    font-size: 20px;
-    font-weight: bold;
+.week-nav:hover {
+    color: var(--secondary-color);
 }
 
 /* 睡眠效率展示 */
@@ -162,12 +199,31 @@ header {
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-label {
+.form-group label {
     display: block;
     margin-bottom: 8px;
     color: var(--text-secondary);
     font-size: 14px;
 }
+
+.form-group label i {
+    margin-right: 8px;
+    width: 20px;
+    text-align: center;
+}
+
+/* 为不同图标添加颜色 */
+.fa-bed { color: #4080FF; }
+.fa-lightbulb { color: #FFB74D; }
+.fa-moon { color: #7E57C2; }
+.fa-clock { color: #8D6E63; }
+.fa-sun { color: #FFA726; }
+.fa-walking { color: #66BB6A; }
+.fa-star { color: #FFD700; }
+.fa-battery-three-quarters { color: #4CAF50; }
+.fa-pills { color: #9C27B0; }
+.fa-cloud-moon { color: #7986CB; }
+.fa-edit { color: #7986CB; }
 
 input[type="time"],
 input[type="number"],
@@ -188,6 +244,7 @@ textarea {
 
 /* 滑块样式 */
 .slider-container {
+    position: relative;
     padding: 10px 0;
 }
 
@@ -333,23 +390,32 @@ input[type="range"]::-webkit-slider-thumb {
 
 /* 梦境记录样式 */
 .dream-toggle {
-    margin-bottom: 10px;
+    margin: 15px 0;
 }
 
 .dream-toggle label {
     display: flex;
     align-items: center;
-    gap: 10px;
     cursor: pointer;
 }
 
 .dream-toggle input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
+    margin-left: 10px;
+    width: 18px;
+    height: 18px;
 }
 
 #dreamContentContainer {
     margin-top: 10px;
+}
+
+#dreamContent {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    resize: vertical;
 }
 
 /* 分析页面样式 */
@@ -515,12 +581,10 @@ input[type="range"]::-webkit-slider-thumb {
 
 .quality-icon {
     font-size: 24px;
-    display: flex;
-    align-items: center;
 }
 
 .quality-icon i {
-    font-size: 24px;
+    font-size: inherit;
 }
 
 .slider-value {
@@ -603,17 +667,4 @@ input[type="range"]::-webkit-slider-thumb {
 #githubLoginBtn:disabled {
     opacity: 0.7;
     cursor: default;
-}
-
-.week-nav {
-    background: none;
-    border: none;
-    color: var(--primary-color);
-    font-size: 20px;
-    cursor: pointer;
-    padding: 0 10px;
-}
-
-.week-nav:hover {
-    color: var(--secondary-color);
 }
